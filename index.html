@@ -55,43 +55,17 @@
     <div id="root"></div>
 
     <!--
-      This script is crucial for both local development and production deployment.
-      - For local dev, create an 'env.js' file manually (it's in .gitignore).
-      - For Netlify, the build command (set in UI) generates this file automatically.
+      This script provides the API Key from the environment.
+      - For local dev, create an 'env.js' file manually.
+      - For Netlify, the build command generates this file automatically.
     -->
     <script src="/env.js" defer></script>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        // A short delay to ensure the deferred env.js script has been loaded and processed.
-        setTimeout(() => {
-          if (typeof window.process === 'undefined' || typeof window.process.env.API_KEY === 'undefined' || window.process.env.API_KEY === '') {
-            const root = document.getElementById('root');
-            if (root) {
-              root.innerHTML = `
-                <div style="font-family: sans-serif; padding: 2rem; text-align: center; color: #991b1b; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; max-width: 600px; margin: 4rem auto;">
-                  <h1 style="font-size: 1.5rem; font-weight: bold;">Application Configuration Error</h1>
-                  <p style="margin-top: 1rem;">The Gemini API key is missing or could not be loaded.</p>
-                  <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #4b5563;">Please ensure the API_KEY environment variable is correctly set in your deployment service (e.g., Netlify) and the site has been redeployed.</p>
-                </div>
-              `;
-            }
-            console.error("Jigoor App Error: API_KEY is not available in window.process.env. The app will not load.");
-          } else {
-            // If the key exists, dynamically load the main application script to start React.
-            const appScript = document.createElement('script');
-            // We set the type to "text/babel" so the Babel Standalone script will process it.
-            appScript.type = 'text/babel';
-            // We add the "data-type" attribute to tell Babel to treat it as a module for imports/exports.
-            appScript.setAttribute('data-type', 'module');
-            // Tell Babel to use the React and TypeScript presets to understand JSX and TS.
-            appScript.setAttribute('data-presets', 'react,typescript');
-            // Load the single, consolidated application file.
-            appScript.src = '/app.tsx';
-            document.body.appendChild(appScript);
-          }
-        }, 50); // 50ms delay is usually sufficient for the deferred script.
-      });
-    </script>
+    <!--
+      This is the main entry point for the React application.
+      Babel will find this tag, transpile it, handle its imports, and run the app.
+    -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="/index.tsx"></script>
+
   </body>
 </html>
