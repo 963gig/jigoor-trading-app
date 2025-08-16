@@ -83,6 +83,8 @@
             appScript.type = 'text/babel';
             // We add the "data-type" attribute to tell Babel to treat it as a module for imports/exports.
             appScript.setAttribute('data-type', 'module');
+            // THIS IS THE FIX: Tell Babel to use the React and TypeScript presets to understand JSX and TS.
+            appScript.setAttribute('data-presets', 'react,typescript');
             appScript.src = '/index.tsx';
             document.body.appendChild(appScript);
           }
