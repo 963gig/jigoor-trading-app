@@ -41,9 +41,10 @@
 {
   "imports": {
     "@google/genai": "https://esm.sh/@google/genai@^1.14.0",
-    "react/": "https://esm.sh/react@^19.1.1/",
     "react": "https://esm.sh/react@^19.1.1",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
+    "react-dom/client": "https://esm.sh/react-dom@^19.1.1/client",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react/": "https://esm.sh/react@^19.1.1/"
   }
 }
 </script>
@@ -83,9 +84,10 @@
             appScript.type = 'text/babel';
             // We add the "data-type" attribute to tell Babel to treat it as a module for imports/exports.
             appScript.setAttribute('data-type', 'module');
-            // THIS IS THE FIX: Tell Babel to use the React and TypeScript presets to understand JSX and TS.
+            // Tell Babel to use the React and TypeScript presets to understand JSX and TS.
             appScript.setAttribute('data-presets', 'react,typescript');
-            appScript.src = '/index.tsx';
+            // Load the single, consolidated application file.
+            appScript.src = '/app.tsx';
             document.body.appendChild(appScript);
           }
         }, 50); // 50ms delay is usually sufficient for the deferred script.
