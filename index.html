@@ -47,12 +47,47 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+<!-- This script will transpile TSX/JSX into plain JavaScript the browser can understand. -->
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 </head>
   <body class="bg-brand-background">
     <div id="root"></div>
-    <!-- Loads local API Key for development. This file should be in .gitignore -->
-    <script src="/env.js"></script>
-    <script type="module" src="/index.tsx"></script>
+
+    <!--
+      This script is crucial for both local development and production deployment.
+      - For local dev, create an 'env.js' file manually (it's in .gitignore).
+      - For Netlify, the build command (set in UI) generates this file automatically.
+    -->
+    <script src="/env.js" defer></script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        // A short delay to ensure the deferred env.js script has been loaded and processed.
+        setTimeout(() => {
+          if (typeof window.process === 'undefined' || typeof window.process.env.API_KEY === 'undefined' || window.process.env.API_KEY === '') {
+            const root = document.getElementById('root');
+            if (root) {
+              root.innerHTML = `
+                <div style="font-family: sans-serif; padding: 2rem; text-align: center; color: #991b1b; background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; max-width: 600px; margin: 4rem auto;">
+                  <h1 style="font-size: 1.5rem; font-weight: bold;">Application Configuration Error</h1>
+                  <p style="margin-top: 1rem;">The Gemini API key is missing or could not be loaded.</p>
+                  <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #4b5563;">Please ensure the API_KEY environment variable is correctly set in your deployment service (e.g., Netlify) and the site has been redeployed.</p>
+                </div>
+              `;
+            }
+            console.error("Jigoor App Error: API_KEY is not available in window.process.env. The app will not load.");
+          } else {
+            // If the key exists, dynamically load the main application script to start React.
+            const appScript = document.createElement('script');
+            // We set the type to "text/babel" so the Babel Standalone script will process it.
+            appScript.type = 'text/babel';
+            // We add the "data-type" attribute to tell Babel to treat it as a module for imports/exports.
+            appScript.setAttribute('data-type', 'module');
+            appScript.src = '/index.tsx';
+            document.body.appendChild(appScript);
+          }
+        }, 50); // 50ms delay is usually sufficient for the deferred script.
+      });
+    </script>
   </body>
 </html>
