@@ -2,11 +2,22 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { TradingSignal, GroundingSource, AssetType } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
-}
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Lazily initialize the AI client on first use to ensure the API key is available.
+const getAiClient = (): GoogleGenAI => {
+    if (ai) {
+        return ai;
+    }
+
+    if (!process.env.API_KEY) {
+        throw new Error("API_KEY environment variable is not set or not available at the time of API call.");
+    }
+    
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return ai;
+};
+
 
 const parseJsonResponse = (text: string): TradingSignal[] => {
     try {
@@ -42,6 +53,7 @@ const parseNewsAnalysisResponse = (text: string): { summary: string, outlook: st
 };
 
 export const fetchNewsAnalysis = async (assetName: string, assetType: AssetType): Promise<{ analysis: { summary: string; outlook: string; }, sources: GroundingSource[] }> => {
+    const aiClient = getAiClient();
     const model = 'gemini-2.5-flash';
 
     const specialization = assetType === 'crypto' ? 'cryptocurrency' : 'Forex markets';
@@ -64,7 +76,7 @@ export const fetchNewsAnalysis = async (assetName: string, assetType: AssetType)
     `;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response: GenerateContentResponse = await aiClient.models.generateContent({
             model: model,
             contents: prompt,
             config: {
@@ -97,6 +109,7 @@ export const fetchNewsAnalysis = async (assetName: string, assetType: AssetType)
 
 
 export const fetchTradingSignals = async (tags: string[]): Promise<{ signals: TradingSignal[], sources: GroundingSource[] }> => {
+    const aiClient = getAiClient();
     const model = 'gemini-2.5-flash';
 
     const prompt = `
@@ -156,7 +169,7 @@ export const fetchTradingSignals = async (tags: string[]): Promise<{ signals: Tr
     `;
 
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
+        const response: GenerateContentResponse = await aiClient.models.generateContent({
             model: model,
             contents: prompt,
             config: {
